@@ -1,2 +1,4 @@
 # graphstats
-Implentations for graph-stat related methods and procedures
+Implentations for graph-stat related methods.
+
+Adapted from neurodata/primitive-interfaces
