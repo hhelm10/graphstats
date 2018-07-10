@@ -1,1 +1,1 @@
-from .numclust import NumberOfClusters
+from .numclust import *

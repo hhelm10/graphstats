@@ -1,1 +1,1 @@
-from .lse import LaplacianSpectralEmbedding
+from .lse import *

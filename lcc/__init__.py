@@ -1,1 +1,1 @@
-from .lcc import LargestConnectedComponent
+from .lcc import *
