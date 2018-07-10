@@ -6,18 +6,20 @@
 
 import numpy as np
 import networkx
+from scipy.stats import rankdata
 
 def pass_to_ranks(G, nedges = 0):
     """
     Passes an adjacency matrix to ranks.
 
     Inputs
-        G - A networkx graph or nd array
+        G - A networkx graph or 1 x n nd array
     Outputs
         PTR(G) - The passed to ranks version of the adjacency matrix of G
     """
 
     if type(G) == networkx.classes.graph.Graph:
+        nedges = len(G.edges)
         edges = np.repeat(0, nedges)
         #loop over the edges and store in an array
         j = 0
@@ -35,7 +37,8 @@ def pass_to_ranks(G, nedges = 0):
 
         return networkx.to_numpy_array(G)
 
-    elif type(G) == numpy.ndarray:
+    elif type(G) == np.ndarray:
+
         n = len(G)
         similarity_mat = np.zeros(shape = (n, n))
         for i in range(n):

@@ -9,7 +9,7 @@ import numpy as np
 import networkx
 from sklearn.decomposition import TruncatedSVD
 
-def adj_spectral_embedding(A, max_dim = int(np.floor(A.shape[0]/10)), eig_scale = 0.5, return_spectrum = True, acorn = 1234)
+def adj_spectral_embedding(A, max_dim = 2, eig_scale = 0.5, return_spectrum = True, acorn = 1234):
     """
     Inputs
         A - A numpy array or networkx graph
@@ -27,8 +27,7 @@ def adj_spectral_embedding(A, max_dim = int(np.floor(A.shape[0]/10)), eig_scale 
     eig_vectors = tsvd.components_.T
     eig_values = tsvd.singular_values_
 
-    if scaled:
-        eig_vectors = eig_vectors.dot(diag(eig_values)**eig_scale)
+    eig_vectors = eig_vectors.dot(np.diag(eig_values**eig_scale))
 
     if return_spectrum:
         return eig_vectors, eig_values

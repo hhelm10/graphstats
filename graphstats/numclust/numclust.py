@@ -6,7 +6,7 @@
 import numpy as np
 from sklearn.mixture import GaussianMixture
 
-def num_clust(X, max_clusters = round(np.log(X.shape[0]))):
+def num_clust(X, max_clusters = 2):
     """
     Inputs
         X - n x d feature matrix

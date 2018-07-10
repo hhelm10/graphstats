@@ -1,1 +1,1 @@
-from .gclust import GaussianClustering
+from .gclust import *

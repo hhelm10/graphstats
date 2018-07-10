@@ -8,30 +8,21 @@ __all__ = ["AdjacencySpectralEmbedding",
            "SpectralGraphClustering", "SeededGraphMatching",
            "VertexNominationSeededGraphMatching"
            ,"SeededGraphMatchingPipeline"]
+"""
 
-from .ase import AdjacencySpectralEmbedding
-from .lse import LaplacianSpectralEmbedding
-from .dimselect import DimensionSelection
-from .gclass import GaussianClassification
-from .gclust import GaussianClustering
-from .lcc import LargestConnectedComponent
-from .nonpar import NonParametricClustering
-from .numclust import NumberOfClusters
-from .oocase import OutOfCoreAdjacencySpectralEmbedding
-from .ptr import PassToRanks
-from .sgc import SpectralGraphClustering
-from .sgm import SeededGraphMatching
-from .vnsgm import VertexNominationSeededGraphMatching
-from .utils import file_path_conversion
-from .pipelines import seeded_graph_matching_pipeline
-from .pipelines import output_json
 
-"""
-"""
-__all__ = ['AdjacencySpectralEmbedding', 'LaplacianSpectralEmbedding',
-           'DimensionSelection', 'GaussianClustering', 'NonParametricClustering',
-           ,'LargestConnectedComponent',
-           'NumberOfClusters', 'OutOfCoreAdjacencySpectralEmbedding', 'PassToRanks', 
-           'SpectralGraphClustering', 'SeededGraphMatching',
-           'VertexNominationSeededGraphMatching']
-"""
+from .ase import *
+from .lse import *
+from .dimselect import *
+from .gclass import *
+from .gclust import *
+from .lcc import *
+from .nonpar import *
+from .numclust import *
+from .oocase import *
+from .ptr import *
+from .sgc import *
+#from .sgm import *
+from .vnsgm import *
+#from .utils import *
+from .omni import *
