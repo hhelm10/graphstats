@@ -8,6 +8,8 @@ from scipy.stats import norm
 
 def profile_likelihood(L, n_elbows = 1, threshold = 0):
     """
+    An implementation of profile likelihood as outlined in Zhu and Ghodsi.
+    
     Inputs
         L - An ordered or unordered list of eigenvalues
         n - The number of elbows to return
@@ -15,6 +17,8 @@ def profile_likelihood(L, n_elbows = 1, threshold = 0):
 
     Return
         elbows - A numpy array containing elbows
+
+
     """
 
     U = L.copy()
