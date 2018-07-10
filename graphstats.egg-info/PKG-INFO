@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: graphstats
+Version: 0.0.1
+Summary: Python interfaces for TA1 primitives
+Home-page: https://github.com/hhelm10/grapstats
+Author: Disa Mhembere, Eric Bridgeford, Youngser Park, Heather G. Patsolic, Tyler M. Tomita, Jesse L. Patsolic
+Author-email: disa@jhu.edu
+License: UNKNOWN
+Description: A library wrapping JHU's Python interfaces for the D3M program's TA1 primitives.
+Platform: UNKNOWN

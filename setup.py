@@ -7,10 +7,9 @@ from setuptools.command.install import install
 from subprocess import check_output, call
 from sys import platform
 
-PACKAGE_NAME = 'pygraph_stats'
+PACKAGE_NAME = 'graphstats'
 MINIMUM_PYTHON_VERSION = 3, 6
 VERSION = '0.0.1'
-
 
 def check_python_version():
     """Exit when the Python version is too low."""
@@ -38,19 +37,20 @@ setup(
     author_email="disa@jhu.edu",
     packages=[
               PACKAGE_NAME,
-              'ase',
-              'lcc',
-              'lse',
-              'dimselect',
-              'gclass',
-              'gclust',
-              'nonpar',
-              'numclust',
-              'ptr',
-              'oocase',
-              'sgc',
-              'sgm',
-              'vnsgm'
+              #'ase',
+              #'lcc',
+              #'lse',
+              #'dimselect',
+              #'gclass',
+              #'gclust',
+              #'nonpar',
+              #'numclust',
+              #'ptr',
+              #'omni',
+              #'oocase',
+              #'sgc',
+              #'sgm',
+              #'vnsgm'
     ],
     entry_points = {
         'd3m.primitives': [
