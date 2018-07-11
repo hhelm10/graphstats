@@ -10,7 +10,6 @@ __all__ = ["AdjacencySpectralEmbedding",
            ,"SeededGraphMatchingPipeline"]
 """
 
-
 from .ase import *
 from .lse import *
 from .dimselect import *

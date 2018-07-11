@@ -28,14 +28,13 @@ def gaussian_classification(X, seeds, labels):
     """
 
     embedding = X.copy()
+    n, d = embedding.shape
 
     seeds = np.array([int(i) for i in seeds])
     labels = np.array([int(i) for i in labels])
 
     unique_labels, label_counts = np.unique(labels, return_counts = True)
     K = len(unique_labels)
-
-    n, d = embedding.shape
 
     if int(K) < d:
         embedding = embedding[:, :K].copy()
@@ -65,7 +64,7 @@ def gaussian_classification(X, seeds, labels):
         temp_label = labels[i]
         x_sums[temp_label, :] += temp_feature_vector
 
-    estimated_means = [x_sums[i,:]/label_counts[i] for i in range(K)]
+    estimated_means = np.array([x_sums[i,:]/label_counts[i] for i in range(K)])
 
     mean_centered_sums = np.zeros(shape = (K, d, d))
 
@@ -100,22 +99,23 @@ def gaussian_classification(X, seeds, labels):
                 PD = False
                 break
 
-    means = container.ndarray(estimated_means)
-    covariances = container.ndarray(estimated_cov)
+    final_labels = np.zeros(n)
 
     if PD and ENOUGH_SEEDS:
-        for i in range(len(testing_nodeIDs)):
+        for i in range(n):
         #for i in range(len(nodeIDs)):
             #temp = np.where(nodeIDs == int(testing_nodeIDs[i]))[0][0]
             #temp = i
-            weighted_pdfs = np.array([pis[j]*MVN.pdf(embedding[i,:], means[j], covariances[j, :, :]) for j in range(K)])
+            weighted_pdfs = np.array([pis[j]*MVN.pdf(embedding[i,:], estimated_means[j], estimated_cov[j, :, :]) for j in range(K)])
             label = np.argmax(weighted_pdfs)
             final_labels[i] = int(label)
     else:
-        for i in range(len(testing_nodeIDs)):
+        for i in range(n):
             #temp = np.where(nodeIDs == int(testing_nodeIDs[i]))[0][0]
-            weighted_pdfs = np.array([pis[j]*MVN.pdf(embedding[i,:], means[j], covariances) for j in range(K)])
+            weighted_pdfs = np.array([pis[j]*MVN.pdf(embedding[i,:], estimated_means[j], estimated_cov) for j in range(K)])
             label = np.argmax(weighted_pdfs)
             final_labels[i] = int(label)
+
+    print(pis, estimated_means, estimated_cov)
 
     return final_labels

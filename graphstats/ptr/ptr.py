@@ -22,19 +22,20 @@ def pass_to_ranks(G, nedges = 0):
         nedges = len(G.edges)
         edges = np.repeat(0, nedges)
         #loop over the edges and store in an array
-        j = 0
-        for u, v, d in G.edges(data=True):
-            edges[j] = d['weight']
-            j += 1
+        if networkx.is_weighted(G):
+            j = 0
+            for u, v, d in G.edges(data=True):
+                edges[j] = d['weight']
+                j += 1
 
-        ranked_values = rankdata(edges)
-        #loop through the edges and assign the new weight:
-        j = 0
-        for u, v, d in G.edges(data=True):
-            #edges[j] = (ranked_values[j]*2)/(nedges + 1)
-            d['weight'] = ranked_values[j]*2/(nedges + 1)
-            j += 1
-
+            ranked_values = rankdata(edges)
+            #loop through the edges and assign the new weight:
+            j = 0
+            for u, v, d in G.edges(data=True):
+                #edges[j] = (ranked_values[j]*2)/(nedges + 1)
+                d['weight'] = ranked_values[j]*2/(nedges + 1)
+                j += 1
+        
         return networkx.to_numpy_array(G)
 
     elif type(G) == np.ndarray:
