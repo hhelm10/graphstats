@@ -3,176 +3,61 @@
 # gclust.py
 # Copyright (c) 2017. All rights reserved.
 
-from rpy2 import robjects
-from typing import Sequence, TypeVar, Union, Dict
-import os
-import rpy2.robjects.numpy2ri
-rpy2.robjects.numpy2ri.activate()
-from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
 import numpy as np
-
-from d3m import container
-from d3m import utils
-from d3m.metadata import hyperparams, base as metadata_module, params
-from d3m.primitive_interfaces import base
-from d3m.primitive_interfaces.base import CallResult
 from sklearn.mixture import GaussianMixture
 
-Inputs = container.List
-Outputs = container.DataFrame
+def gaussian_clustering(X, max_clusters = 2, min_clusters = 1):
+    """
+    Inputs
+        X - n x d feature matrix; it is assumed that the d features are ordered
+        max_clusters - The maximum number of clusters
+        min_clusters - The minumum number of clusters
 
-class Params(params.Params):
-    pass
+    Outputs
+        Predicted class labels that maximize BIC
+    """
 
-class Hyperparams(hyperparams.Hyperparams):
-    max_clusters = hyperparams.Hyperparameter[int](default = 2,semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'])
-    #seeds = hyperparams.Hyperparameter[np.ndarray](default = np.array([]), semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'])
-    #labels = hyperparams.Hyperparameter[np.ndarray](default = np.array([]), semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'])
+    if type(X) != np.ndarray:
+        raise TypeError("numpy.ndarray only")
 
-class GaussianClustering(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params,Hyperparams]):
-    # This should contain only metadata which cannot be automatically determined from the code.
-    metadata = metadata_module.PrimitiveMetadata({
-        # Simply an UUID generated once and fixed forever. Generated using "uuid.uuid4()".
-        'id': '5194ef94-3683-319a-9d8d-5c3fdd09de24',
-        'version': "0.1.0",
-        'name': "jhu.gclust",
-        # The same path the primitive is registered with entry points in setup.py.
-        'python_path': 'd3m.primitives.jhu_primitives.GaussianClustering',
-        # Keywords do not have a controlled vocabulary. Authors can put here whatever they find suitable.
-        'keywords': ['gaussian clustering'],
-        'source': {
-            'name': "JHU",
-            'uris': [
-                # Unstructured URIs. Link to file and link to repo in this case.
-                'https://github.com/neurodata/primitives-interfaces/jhu_primitives/gclust/gclust.py',
-#                'https://github.com/youngser/primitives-interfaces/blob/jp-devM1/jhu_primitives/ase/ase.py',
-                'https://github.com/neurodata/primitives-interfaces.git',
-            ],
-        },
-        # A list of dependencies in order. These can be Python packages, system packages, or Docker images.
-        # Of course Python packages can also have their own dependencies, but sometimes it is necessary to
-        # install a Python package first to be even able to run setup.py of another package. Or you have
-        # a dependency which is not on PyPi.
-        'installation': [{
-                'type': 'UBUNTU',
-                'package': 'r-base',
-                'version': '3.4.2'
-            },
-            {
-                'type': 'UBUNTU',
-                'package': 'libxml2-dev',
-                'version': '2.9.4'
-            },
-            {
-                'type': 'UBUNTU',
-                'package': 'libpcre3-dev',
-                'version': '2.9.4'
-            },
-            {
-            'type': metadata_module.PrimitiveInstallationType.PIP,
-            'package_uri': 'git+https://github.com/neurodata/primitives-interfaces.git@{git_commit}#egg=jhu_primitives'.format(
-                git_commit=utils.current_git_commit(os.path.dirname(__file__)),
-                ),
-        }],
-        # URIs at which one can obtain code for the primitive, if available.
-        # 'location_uris': [
-        #     'https://gitlab.com/datadrivendiscovery/tests-data/raw/{git_commit}/primitives/test_primitives/monomial.py'.format(
-        #         git_commit=utils.current_git_commit(os.path.dirname(__file__)),
-        #     ),
-        # ],
-        # Choose these from a controlled vocabulary in the schema. If anything is missing which would
-        # best describe the primitive, make a merge request.
-        'algorithm_types': [
-            "EXPECTATION_MAXIMIZATION_ALGORITHM"
-        ],
-        'primitive_family': "CLUSTERING"
-    })
+    if X.ndim < 2:
+        raise TypeError("n x d, d > 1 numpy.ndarray only")
 
-    def __init__(self, *, hyperparams: Hyperparams, random_seed: int = 0, docker_containers: Dict[str, base.DockerContainer] = None) -> None:
-        super().__init__(hyperparams=hyperparams, random_seed=random_seed, docker_containers=docker_containers)
+    n, d = X.shape
 
-        self._embedding: container.ndarray = None
+    max_clusters = int(round(max_clusters))
+    min_clusters = int(round(min_clusters))
 
-    def produce(self, *, inputs: Inputs, timeout: float = None, iterations: int = None) -> CallResult[Outputs]:
-        """
-        TODO: YP description
+    if max_clusters < d:
+        X = X[:, :max_clusters].copy()
 
-        **Positional Arguments:**
+    cov_types = ['full', 'tied', 'diag', 'spherical']
 
-        inputs:
-            - A matrix
+    clf = GaussianMixture(n_components = min_clusters, covariance_type = 'spherical')
+    clf.fit(X)
+    BIC_max = -clf.bic(X)
+    cluster_likelihood_max = min_clusters
+    cov_type_likelihood_max = "spherical"
 
-        **Optional Arguments:**
+    for i in range(min_clusters, max_clusters):
+        for k in cov_types:
+            clf = GaussianMixture(n_components=i, 
+                                covariance_type=k)
 
-        dim:
-            - The number of clusters in which to assign the data
-        """
+            clf.fit(X)
 
-        if self._embedding is None:
-            self._embedding = inputs[0]
+            current_bic = -clf.bic(self._embedding)
 
-        nodeIDs = inputs[1]
-        nodeIDS = np.array([int(i) for i in nodeIDs])
+            if current_bic > BIC_max:
+                BIC_max = current_bic
+                cluster_likelihood_max = i
+                cov_type_likelihood_max = k
 
-        max_clusters = self.hyperparams['max_clusters']
+    clf = GaussianMixture(n_components = cluster_likelihood_max,
+                    covariance_type = cov_type_likelihood_max)
+    clf.fit(X)
 
-        if max_clusters < self._embedding.shape[1]:
-            self._embedding = self._embedding[:, :max_clusters].copy()
+    predictions = clf.predict(X)
+    predictions = np.array([int(i) for i in predictions])
 
-        cov_types = ['full', 'tied', 'diag', 'spherical']
-
-        clf = GaussianMixture(n_components = 1, covariance_type = 'spherical')
-        clf.fit(self._embedding)
-        BIC_max = -clf.bic(self._embedding)
-        cluster_likelihood_max = 1
-        cov_type_likelihood_max = "spherical"
-
-        for i in range(1, max_clusters):
-            for k in cov_types:
-                clf = GaussianMixture(n_components=i, 
-                                    covariance_type=k)
-
-                clf.fit(self._embedding)
-
-                current_bic = -clf.bic(self._embedding)
-
-                if current_bic > BIC_max:
-                    BIC_max = current_bic
-                    cluster_likelihood_max = i
-                    cov_type_likelihood_max = k
-
-        clf = GaussianMixture(n_components = cluster_likelihood_max,
-                        covariance_type = cov_type_likelihood_max)
-        clf.fit(self._embedding)
-
-        predictions = clf.predict(self._embedding)
-
-        testing = inputs[2]
-
-        testing_nodeIDs = np.asarray(testing['G1.nodeID'])
-        testing_nodeIDs = np.array([int(i) for i in testing_nodeIDs])
-        final_labels = np.zeros(len(testing))
-
-        for i in range(len(testing_nodeIDs)):
-            #temp = np.where(self._nodeIDs == int(testing_nodeIDs[i]))[0][0]
-            label = predictions[i]
-            #print(label)
-            final_labels[i] = int(label)
-
-        testing['classLabel'] = final_labels
-        outputs = container.DataFrame(testing[['d3mIndex', 'classLabel']])
-        #outputs = container.DataFrame(testing['classLabel'])
-        return base.CallResult(outputs)
-
-
-    def set_training_data(self, *, inputs: Inputs) -> None:
-        self._training_inputs = inputs
-        
-    def get_params(self) -> None:
-        return Params
-
-    def set_params(self, *, params: Params) -> None:
-        pass
-
-    def fit(self, *, timeout: float = None, iterations: int = None) -> None:
-        pass
+    return predictions
