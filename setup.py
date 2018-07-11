@@ -72,6 +72,6 @@ setup(
     package_data = {'': ['*.r', '*.R']},
     include_package_data = True,
     install_requires=['typing', 'numpy', 'scipy','networkx',
-        'python-igraph', 'rpy2', 'sklearn', 'jinja2', 'scipy'],
+        'python-igraph', 'rpy2', 'sklearn', 'jinja2', 'scipy', 'pandas'],
     url='https://github.com/hhelm10/grapstats',
 )
