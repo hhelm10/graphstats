@@ -6,7 +6,7 @@
 import numpy as np
 from sklearn.mixture import GaussianMixture
 
-def gaussian_clustering(X, max_clusters = 2, min_clusters = 1):
+def gaussian_clustering(X, max_clusters = 2, min_clusters = 1, acorn = 1234):
     """
     Inputs
         X - n x d feature matrix; it is assumed that the d features are ordered
@@ -16,6 +16,7 @@ def gaussian_clustering(X, max_clusters = 2, min_clusters = 1):
     Outputs
         Predicted class labels that maximize BIC
     """
+    np.random.seed(acorn)
 
     if type(X) != np.ndarray:
         raise TypeError("numpy.ndarray only")
@@ -39,20 +40,22 @@ def gaussian_clustering(X, max_clusters = 2, min_clusters = 1):
     cluster_likelihood_max = min_clusters
     cov_type_likelihood_max = "spherical"
 
-    for i in range(min_clusters, max_clusters):
+    for i in range(min_clusters, max_clusters + 1):
         for k in cov_types:
             clf = GaussianMixture(n_components=i, 
                                 covariance_type=k)
 
             clf.fit(X)
 
-            current_bic = -clf.bic(self._embedding)
+            current_bic = -clf.bic(X)
+            #print(i, k, current_bic)
 
             if current_bic > BIC_max:
                 BIC_max = current_bic
                 cluster_likelihood_max = i
                 cov_type_likelihood_max = k
 
+    #print(cluster_likelihood_max, cov_type_likelihood_max)
     clf = GaussianMixture(n_components = cluster_likelihood_max,
                     covariance_type = cov_type_likelihood_max)
     clf.fit(X)

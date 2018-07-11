@@ -6,13 +6,15 @@
 import numpy as np
 from sklearn.mixture import GaussianMixture
 
-def num_clust(X, max_clusters = 2):
+def num_clust(X, max_clusters = 2, min_clusters = 1, acorn = 1234):
     """
     Inputs
         X - n x d feature matrix
     Return
         An array with the max BIC and AIC values for each number of clusters (1, .., max_clusters)
     """
+    np.random.seed(acorn)
+    
     max_clusters = int(max_clusters)
 
     cov_types = ['full', 'tied', 'diag', 'spherical']
@@ -30,7 +32,7 @@ def num_clust(X, max_clusters = 2):
         clf = GaussianMixture(n_components=i, 
                                 covariance_type='spherical')
         clf.fit(X)
-        temp_max_BIC, temp_max_AIC = -clf.bic(X), -clf.aic(X)
+        temp_max_BIC, temp_max_AIC, temp_type_BIC, temp_type_AIC = -clf.bic(X), -clf.aic(X), 'spherical', 'spherical'
         for k in cov_types:
             clf = GaussianMixture(n_components=i, 
                                 covariance_type=k)
@@ -41,11 +43,14 @@ def num_clust(X, max_clusters = 2):
 
             if temp_BIC > temp_max_BIC:
                 temp_max_BIC = temp_BIC
+                temp_type_BIC = k
+
 
             if temp_AIC > temp_max_AIC:
                 temp_max_AIC = temp_AIC
+                temp_type_AIC = k
 
-        results.append((i, temp_max_BIC, temp_max_AIC))
+        results.append((i, temp_max_BIC, temp_type_BIC, temp_max_AIC, temp_type_AIC))
         BICs.append(temp_max_BIC)
         AICs.append(temp_max_AIC)
 
@@ -53,8 +58,10 @@ def num_clust(X, max_clusters = 2):
     AICs2 = list(AICs)
 
     KBICs = []
+    typeBICs = []
 
     KAICs = []
+    typeAICs = []
 
     while len(BICs2) > 0:
         temp, temp_index = max(BICs2), np.argmax(BICs2)
