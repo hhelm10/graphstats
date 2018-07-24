@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 # ptr.py
-# Created by Disa Mhembere, Heather Patsolic on 2017-09-11.
-# Copyright (c) 2017. All rights reserved.
+# Created by Hayden Helm, Joshua Agterberg in June 2018. Adapted from Youngser Park.
 
 import numpy as np
 import networkx
@@ -39,15 +38,8 @@ def pass_to_ranks(G, nedges = 0):
         return networkx.to_numpy_array(G)
 
     elif type(G) == np.ndarray:
-
-        n = len(G)
-        similarity_mat = np.zeros(shape = (n, n))
-        for i in range(n):
-            for k in range(i + 1, n):
-                temp = -np.sqrt((G[i] - G[k])**2)
-                similarity_mat[i,k] = np.exp(temp)
-                similarity_mat[k,i] = similarity_mat[i,k]
-        unraveled_sim = similarity_mat.ravel()
+        n, _ = G.shape
+        unraveled_sim = G.ravel().copy()
         sorted_indices = np.argsort(unraveled_sim)
 
         if nedges == 0: # Defaulted to (n choose 2), matrix assumed to be symmetric
@@ -58,11 +50,12 @@ def pass_to_ranks(G, nedges = 0):
 
         else:
             for i in range(nedges):
-                unraveled_sim[sorted_indices[-2*i - 1]] = (nedges - i)/nedges
+                unraveled_sim[sorted_indices[-2*i - 1]] = (nedges - i)/nedges # assumes symmetric (undirected) matrix
                 unraveled_sim[sorted_indices[-2*i - 2]] = (nedges - i)/nedges
 
             for i in range(n**2 - int(2*nedges)):
-                unraveled_sim[sorted_indices[i]] = 0
+                unraveled_sim[sorted_indices[i]] = 0 # set rest of edges to 0
 
-        ptred = unraveled_sim.reshape((n,n))
+        ptred = unraveled_sim.reshape((n,n)) # back to similarity mat
+
         return ptred

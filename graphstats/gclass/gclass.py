@@ -41,9 +41,6 @@ def gaussian_classification(X, seeds, labels):
         d = int(K)
 
     ENOUGH_SEEDS = True # For full estimation
-
-    #get unique labels
-    unique_labels, label_counts = np.unique(labels, return_counts = True)
     for i in range(K):
         if label_counts[i] < d*(d + 1)/2:
             ENOUGH_SEEDS = False
@@ -51,8 +48,7 @@ def gaussian_classification(X, seeds, labels):
 
     pis = label_counts/len(seeds)
 
-    #reindex labels if necessary
-    for i in range(len(labels)): # reset labels to [0,.., K-1]
+    for i in range(len(labels)): # reindex labels to [0,.., K-1]
         itemindex = np.where(unique_labels==labels[i])[0][0]
         labels[i] = int(itemindex)
 
@@ -60,7 +56,7 @@ def gaussian_classification(X, seeds, labels):
     x_sums = np.zeros(shape = (K, d))
 
     for i in range(len(seeds)):
-        temp_feature_vector = embedding[i, :]
+        temp_feature_vector = embedding[seeds[i], :]
         temp_label = labels[i]
         x_sums[temp_label, :] += temp_feature_vector
 
@@ -69,7 +65,7 @@ def gaussian_classification(X, seeds, labels):
     mean_centered_sums = np.zeros(shape = (K, d, d))
 
     for i in range(len(seeds)):
-        temp_feature_vector = embedding[i, :].copy()
+        temp_feature_vector = embedding[seeds[i], :].copy()
         temp_label = labels[i]
         mean_centered_feature_vector = temp_feature_vector - estimated_means[labels[i]]
         temp_feature_vector = np.reshape(temp_feature_vector, (len(temp_feature_vector), 1))
@@ -116,6 +112,76 @@ def gaussian_classification(X, seeds, labels):
             label = np.argmax(weighted_pdfs)
             final_labels[i] = int(label)
 
-    print(pis, estimated_means, estimated_cov)
+    #print(pis, estimated_means, estimated_cov)
 
     return final_labels
+
+def permutation_error(perm1, value1, perm2, value2, include = "all"):
+    perm1 = np.array(perm1)
+    perm2 = np.array(perm2)
+    
+    set1 = set(perm1)
+    set2 = set(perm2)
+    if len(set1) != len(set2):
+        raise ValueError("Permutations of different objects")
+    elif set1 != set2:
+        list1 = np.zeros(len(perm1))
+        list2 = np.zeros(len(perm2))
+        temp1 = np.argsort(perm1)
+        temp2 = np.argsort(perm2)
+        print(temp1, temp2)
+        for i in range(len(perm1)):
+            list1[temp1[i]] = i + 1 
+            list2[temp2[i]] = i + 1
+
+    sim_c = 0    
+    for i in range(len(list1)):
+        if include == "errors":
+            if list1[i] != list2[i]:
+                sim_c += np.sqrt((value1[i] - value2[i])**2)/value1[i]
+        elif include == "all":
+            sim_c += np.sqrt((value1[i] - value2[i])**2)/value1[i]
+            
+    sim = 1 - sim_c/len(perm1)
+     
+    return sim
+
+def calculate_priors(pis, values):
+    if len(values) == 0:
+        return pis
+    elif len(values) == 1:
+        return pis
+
+    pis_ = np.array(pis)
+    values_ = np.array(values)
+
+    new_pi = np.array([pis[i]*values[i] for i in range(len(pis))]) / pis.dot(values)
+    return new_pi
+
+def estimate_means(A, seeds, labels):
+    rank_means = np.zeros(shape = (K, K))
+
+    for i in range(K):
+        for j in range(i + 1, K):
+            for k in range(len(seeds[i])):
+                for l in range(len(seeds[j])):
+                    rank_means[int(labels[i]), int(labels[j])] += A[seeds[i][k], seeds[j][l]]
+                    
+            rank_means[i,j] / (len(seeds[i]) * len(seeds[j]))
+            rank_means[j, i] = rank_means[i,j]
+                    
+    for i in range(K):
+        for k in range(len(seeds[i])):
+            for j in range(k + 1, len(seeds[i])):
+                rank_means[i,i] += A[seeds[i][k], seeds[i][j]]
+        rank_means[i,i] / choose(len(seeds[i]), 2)
+
+def choose(n, k):
+    from math import factorial
+    if n < k:
+        return 0
+    
+    else:
+        num = factorial(n)
+        den = factorial(k)*factorial(n - k)
+    return int(num/den)
