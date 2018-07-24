@@ -15,7 +15,7 @@ from scipy.stats import multivariate_normal as MVN
 import numpy as np
 from networkx import Graph
 
-def gaussian_classification(X, seeds, labels):
+def gaussian_classification(X, seeds, labels, update_priors = False):
     """
     Gaussian classification (i.e. seeded gaussian "clustering").
 
@@ -99,19 +99,26 @@ def gaussian_classification(X, seeds, labels):
 
     if PD and ENOUGH_SEEDS:
         for i in range(n):
+            if not update_priors:
         #for i in range(len(nodeIDs)):
             #temp = np.where(nodeIDs == int(testing_nodeIDs[i]))[0][0]
             #temp = i
-            weighted_pdfs = np.array([pis[j]*MVN.pdf(embedding[i,:], estimated_means[j], estimated_cov[j, :, :]) for j in range(K)])
-            label = np.argmax(weighted_pdfs)
-            final_labels[i] = int(label)
+                weighted_pdfs = np.array([pis[j]*MVN.pdf(embedding[i,:], estimated_means[j], estimated_cov[j, :, :]) for j in range(K)])
+                label = np.argmax(weighted_pdfs)
+                final_labels[i] = int(label)
+            else:
+                return
+
+
     else:
         for i in range(n):
+            if not update_priors:
             #temp = np.where(nodeIDs == int(testing_nodeIDs[i]))[0][0]
-            weighted_pdfs = np.array([pis[j]*MVN.pdf(embedding[i,:], estimated_means[j], estimated_cov) for j in range(K)])
-            label = np.argmax(weighted_pdfs)
-            final_labels[i] = int(label)
-
+                weighted_pdfs = np.array([pis[j]*MVN.pdf(embedding[i,:], estimated_means[j], estimated_cov) for j in range(K)])
+                label = np.argmax(weighted_pdfs)
+                final_labels[i] = int(label)
+            else:
+                return
     #print(pis, estimated_means, estimated_cov)
 
     return final_labels
@@ -158,23 +165,56 @@ def calculate_priors(pis, values):
     new_pi = np.array([pis[i]*values[i] for i in range(len(pis))]) / pis.dot(values)
     return new_pi
 
-def estimate_means(A, seeds, labels):
-    rank_means = np.zeros(shape = (K, K))
+def estimate_means(A, seeds, labels, unlabeled = [], return_argsort = False):
+    new_labels = np.zeros(labels)
 
+    unique_labels, label_counts = np.unique(labels, return_counts = True)
+    K = len(unique_labels)
+
+    means = np.zeros(shape = (K, K))
+
+    for i in range(len(labels)): # reindex labels to [0,.., K-1]
+        itemindex = np.where(unique_labels==labels[i])[0][0]
+        new_labels[i] = int(itemindex)
+
+    if len(unlabeled) == 0:
+        for k in range(len(seeds)):
+            for l in range(k + 1, len(seeds)):
+                means[int(new_labels[k]), int(new_labels[l])] += A[seeds[k], seeds[l]] # update appropriate means
+                        
+        for i in range(K):
+            for j in range(i, K):
+                means[i,j] / (label_counts[i] * label_counts[j])
+                means[j, i] = means[i,j]
+    elif unlabeled[0] < 0:
+        raise ValueError("Negative index")
+    else:
+        for k in range(len(seeds)):
+            means[int(new_labels[k]), int(new_labels[l])] += A[seeds[k], seeds[l]]
+
+        zero_index = np.where(means == 0)[0]
+
+        if len(zero_index) == 0:
+            raise ValueError("Insufficient seeds")
+        else:
+            for i in range(K):
+                for j in range(i, K):
+                    means[i,j] / (label_counts[i] * label_counts[j])
+                    means[j, i] = means[i,j]
+        for i in range(K):
+            for j in range(len(seeds)):
+                means[i, int(new_labels[j])] += A[unlabeled[0], seeds[j]]
+
+            means[i,k] / len(label_counts[i] + 1)
+
+    argsorts = means.copy()
     for i in range(K):
-        for j in range(i + 1, K):
-            for k in range(len(seeds[i])):
-                for l in range(len(seeds[j])):
-                    rank_means[int(labels[i]), int(labels[j])] += A[seeds[i][k], seeds[j][l]]
-                    
-            rank_means[i,j] / (len(seeds[i]) * len(seeds[j]))
-            rank_means[j, i] = rank_means[i,j]
-                    
-    for i in range(K):
-        for k in range(len(seeds[i])):
-            for j in range(k + 1, len(seeds[i])):
-                rank_means[i,i] += A[seeds[i][k], seeds[i][j]]
-        rank_means[i,i] / choose(len(seeds[i]), 2)
+        argsorts[i,:] = np.argsort(means[i, :])
+
+    if return_argsort:
+        return means, argsorts
+    else:
+        return means
 
 def choose(n, k):
     from math import factorial
@@ -185,3 +225,4 @@ def choose(n, k):
         num = factorial(n)
         den = factorial(k)*factorial(n - k)
     return int(num/den)
+

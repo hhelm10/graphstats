@@ -1,14 +1,21 @@
+#!/usr/bin/env python
+
 import numpy as np
 
-def SBM(n, B = [], pi = [], seeds = [], acorn = 1234):
+def SBM(n, pi = [], B = [], seeds = [], weighted = False, dist = "", params = [], acorn = 1234):
+	"""
+	Generates a SBM with the the outlined parameters
+	"""
+
     if len(B) == 0:
-        B = [np.eye(round(n/2))]
+        B = [np.eye(round(n/2))] # identity matrix with n / 2 entries if B undefined
+
+    K, _ = B.shape[0]
     
     if len(pi) == 0:
-        pi = 1/B.shape[0] * np.ones(B.shape[0])
+        pi = 1/K * np.ones(K) # equal priors if pi undefined
    
-    K, _ = B.shape
-    A = adj_matrix(n, pi, B, acorn = acorn)
+    A = adj_matrix(n, pi, B, weighted = weighted, dist = dist, params = params, acorn = acorn)
 
     return A
 
@@ -45,7 +52,7 @@ def gen_F(K, equal = False, dist = "poisson", min_ = 1, max_ = 100, acorn = 1234
     if equal: # if all the distributions are equal
     	F = F*np.random.randint(min_, max_)
     	
-    F.reshape((K, K)) # reshape to a K x K matrix
+    F = F.reshape((K, K)) # reshape to a K x K matrix
     for i in range(K): 
         for j in range(i, K):
             F[i,j] = np.random.randint(min_, max_) # randomly set distributions for each block
