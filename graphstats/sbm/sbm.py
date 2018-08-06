@@ -1,20 +1,13 @@
-#!/usr/bin/env python
-
 import numpy as np
 
-def SBM(n, pi = [], B = [], seeds = [], weighted = False, dist = "", params = [], acorn = 1234):
-	"""
-	Generates a SBM with the the outlined parameters
-	"""
-
+def SBM(n, pi = [], B = [], weighted = False, dist = "", params = [], acorn = 1234):
     if len(B) == 0:
-        B = [np.eye(round(n/2))] # identity matrix with n / 2 entries if B undefined
-
-    K, _ = B.shape[0]
+        B = [np.eye(round(n/2))]
     
     if len(pi) == 0:
-        pi = 1/K * np.ones(K) # equal priors if pi undefined
+        pi = 1/B.shape[0] * np.ones(B.shape[0])
    
+    K, _ = B.shape
     A = adj_matrix(n, pi, B, weighted = weighted, dist = dist, params = params, acorn = acorn)
 
     return A
@@ -85,11 +78,15 @@ def adj_matrix(n, pi, Lambda, weighted = False, dist = "", params = [], acorn = 
 
 def gen_seeds(Nv, seed_ratio, acorn = 1234):
     np.random.seed(acorn)
-    
+
     K = len(Nv)
     
     num_seeds = [int(round(seed_ratio*Nv)) for i in range(K)]
-    seeds = [[] for i in m]
+
+    seeds = [[] for i in range(K)]
+
     for i in range(K):
-        for j in range(num_seeds[i]):
-            index = np.random.randint(j)
+    	for k in range(num_Seeds[i]):
+    		seeds[i].append(int(i + k + sum(Nv[:i])))
+
+    return seeds

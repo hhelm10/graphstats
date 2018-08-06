@@ -59,3 +59,14 @@ def pass_to_ranks(G, nedges = 0):
         ptred = unraveled_sim.reshape((n,n)) # back to similarity mat
 
         return ptred
+
+def edge_count(A):
+    n, _ = A.shape
+    c = 0
+    
+    for i in range(n):
+        for j in range(i, n):
+            if A[i,j] != 0:
+                c += 1
+                
+    return c
