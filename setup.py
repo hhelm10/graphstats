@@ -53,25 +53,23 @@ setup(
               #'vnsgm'
     ],
     entry_points = {
-        'd3m.primitives': [
-            'AdjacencySpectralEmbedding=ase:AdjacencySpectralEmbedding',
-            'LargestConnectedComponent=lcc:LargestConnectedComponent',
-            'LaplacianSpectralEmbedding=lse:LaplacianSpectralEmbedding',
-            'DimensionSelection=dimselect:DimensionSelection',
-            'GaussianClassification=gclass:GaussianClassification',
-            'GaussianClustering=gclust:GaussianClustering',
-            'NonParametricClustering=nonpar:NonParametricClustering',
-            'NumberOfClusters=numclust:NumberOfClusters',
-            'OutOfCoreAdjacencySpectralEmbedding=oocase:OutOfCoreAdjacencySpectralEmbedding',
-            'PassToRanks=ptr:PassToRanks',
-            'SpectralGraphClustering=sgc:SpectralGraphClustering',
-            'SeededGraphMatching=sgm:SeededGraphMatching',
-            'VertexNominationSeededGraphMatching=vnsgm:VertexNominationSeededGraphMatching'
-            ]
+            # 'd3m.primitives': [
+            # 'AdjacencySpectralEmbedding=ase:AdjacencySpectralEmbedding',
+            # 'LargestConnectedComponent=lcc:LargestConnectedComponent',
+            # 'LaplacianSpectralEmbedding=lse:LaplacianSpectralEmbedding',
+            # 'DimensionSelection=dimselect:DimensionSelection',
+            # 'GaussianClassification=gclass:GaussianClassification',
+            # 'GaussianClustering=gclust:GaussianClustering',
+            # 'NonParametricClustering=nonpar:NonParametricClustering',
+            # 'NumberOfClusters=numclust:NumberOfClusters',
+            # 'OutOfCoreAdjacencySpectralEmbedding=oocase:OutOfCoreAdjacencySpectralEmbedding',
+            # 'PassToRanks=ptr:PassToRanks',
+            # 'SpectralGraphClustering=sgc:SpectralGraphClustering',
+            # 'SeededGraphMatching=sgm:SeededGraphMatching',
+            # 'VertexNominationSeededGraphMatching=vnsgm:VertexNominationSeededGraphMatching'
+            # ]
     },
-    package_data = {'': ['*.r', '*.R']},
-    include_package_data = True,
     install_requires=['typing', 'numpy', 'scipy','networkx',
-        'python-igraph', 'rpy2', 'sklearn', 'jinja2', 'scipy', 'pandas'],
+                      'sklearn', 'jinja2', 'scipy', 'pandas'],
     url='https://github.com/hhelm10/grapstats',
 )
