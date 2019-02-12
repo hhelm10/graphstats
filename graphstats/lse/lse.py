@@ -21,7 +21,10 @@ def lap_spectral_embedding(A, type_ = "DAD", d_scale = 0.5, max_dim = 2, eig_sca
         A = networkx.to_numpy_array(A)
 
     if type_ == "DAD":
-        D = np.linalg.pinv(np.diag(A.sum(axis=1))**d_scale)
+        degrees = np.array([np.sum(A[i, :]) for i in range(A.shape[0])])
+        degrees_diag = np.diag(degrees)
+
+        D = np.linalg.pinv(degrees_diag**d_scale)
         L = D @ A @ D
     elif type_ == "D-A":
         L = np.diag(A.sum(axis=1)) - A

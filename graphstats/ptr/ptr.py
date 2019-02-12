@@ -12,7 +12,7 @@ def pass_to_ranks(G, nedges = 0):
     Passes an adjacency matrix to ranks.
 
     Inputs
-        G - A networkx graph or 1 x n nd array
+        G - A networkx graph or 1 x n nd arrayz
     Outputs
         PTR(G) - The passed to ranks version of the adjacency matrix of G
     """

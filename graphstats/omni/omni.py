@@ -7,6 +7,7 @@ import networkx
 import pandas as pd
 from ..ase import adj_spectral_embedding
 from sklearn.preprocessing import MinMaxScaler
+from ..dimselect import profile_likelihood
 
 def omni_matrix(list_of_sim_matrices, off_diag = "mean", transform = "omni_bar", max_dim = 2, eig_scale = 0.5): #, combine = "omni_bar"):
     """
@@ -72,7 +73,7 @@ def get_attributes(G):
 
     return attr_df
 
-def similarities(attributes_df, columns, joint = False, metric = "eucl_dist"):
+def similarities(attributes_df, columns, joint = False, metric = "eucl_dist", n_elbows = 1):
     """
     Generates a list of similarity matrices
 
@@ -106,47 +107,55 @@ def similarities(attributes_df, columns, joint = False, metric = "eucl_dist"):
     sims = []
 
     if joint:
-        feature_array = []
-        for c in column_names:
+        #feature_array = []
+        #for c in column_names:
+        #    scaler = MinMaxScaler()
+        #    temp = np.array(attributes_df[c])
+        #    temp = temp.reshape(-1, 1)
+        #    scaler.fit(temp)
+        #    scaled = scaler.transform(temp)
+        #    feature_array.append(scaled)
+        if len(column_names) == 1:
             scaler = MinMaxScaler()
             temp = np.array(attributes_df[c])
             temp = temp.reshape(-1, 1)
             scaler.fit(temp)
-            scaled = scaler.transform(temp)
-            feature_array.append(scaled)
-        scaler = MinMaxScaler
-        scaler.fit(attributes_df[column_names])
-        feature_array_2 = scaler.transform(attributes_df[column_names])
+            feature_array = scaler.transform(temp)
+        else:
+            scaler = MinMaxScaler(feature_range = (0,10))
+            scaler.fit(X = np.array(attributes_df[column_names]))
+            feature_array = scaler.transform(np.array(attributes_df[column_names]))
 
+        Gram_array = feature_array @ feature_array.T
+        return Gram_array
 
-        feature_array = np.array(feature_array)
+        V, U, _ = np.linalg.svd(feature_array)
 
-        print(feature_array, feature_array_2)
-        return
+        elbows = profile_likelihood(U, n_elbows = n_elbows)
 
+        pc_vectors = V[:, :elbows[n_elbows - 1]]
 
+        #return pc_vectors
 
-        # TODO
-        scaler = MinMaxScaler()
-        scaler.fit()
-        print("")
     else:
         for c in column_names:
             try:
                 temp = np.array(attributes_df[c])
             except:
                 raise ValueError("Unsupported or inconsistent column type")
-                return None
 
             s2 = np.var(temp, ddof = 1)
             temp_sim = np.zeros(shape = (n, n))
 
-            for i in range(n):
-                for k in range(i + 1, n):
-                    if metric == "eucl_dist" or metric == "fuzzy_subset":
+            if metric == "eucl_dist":
+                for i in range(n):
+                    for k in range(i + 1, n):
                         dist = (temp[i] - temp[k])**2
                         temp_sim[i,k] = np.exp(-dist/s2)
                         temp_sim[k,i] = temp_sim[i,k]
+            elif metric == "cos":
+                for i in range(n):
+                    dist = temp[i,:]
 
             sims.append(temp_sim)
 

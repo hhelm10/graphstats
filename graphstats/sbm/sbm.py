@@ -53,7 +53,7 @@ def gen_F(K, equal = False, dist = "poisson", min_ = 1, max_ = 100, acorn = 1234
             
     return F
 
-def adj_matrix(n, pi, Lambda, weighted = False, dist = "", params = [], acorn = 1234):
+def adj_matrix(n, pi, Lambda, weighted = False, dist = "", means = [], scales = 0, acorn = 1234):
     np.random.seed(acorn)
     n = int(n) # Just in case!
     A = np.zeros(shape = (n, n)) # n x n adjcacency matrix
@@ -68,7 +68,12 @@ def adj_matrix(n, pi, Lambda, weighted = False, dist = "", params = [], acorn = 
                     A[k, j] = np.random.binomial(1, Lambda[i, c]) # generates and assigns an edge based on block membership
                     if weighted:
                         if dist == "poisson":
-                            A[k, j] = A[k, j] * (np.random.poisson(params[i, c]) + 1)
+                            A[k, j] = A[k, j] * (np.random.poisson(means[i, c]) + 1)
+                        elif dist == "normal":
+                        	if type(scales) is int:
+                        		A[k, j] = A[k, j] * (np.random.normal(means[i, c], scales))
+                        	else:
+                        		A[k, j] = A[k, j] * (np.random.normal(means[i, c], scales[i, c]))
                     A[j, k] = A[k, j] # A is symmetric
                 c += 1
             A[k,k] = 0 # A is hollow

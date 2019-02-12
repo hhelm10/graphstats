@@ -6,7 +6,7 @@
 import numpy as np
 from sklearn.mixture import GaussianMixture
 
-def gaussian_clustering(X, max_clusters = 2, min_clusters = 1, acorn = 1234):
+def gaussian_clustering(X, max_clusters = 2, min_clusters = 1, return_parameters = False, acorn = 1234):
     """
     Inputs
         X - n x d feature matrix; it is assumed that the d features are ordered
@@ -62,5 +62,9 @@ def gaussian_clustering(X, max_clusters = 2, min_clusters = 1, acorn = 1234):
 
     predictions = clf.predict(X)
     predictions = np.array([int(i) for i in predictions])
+
+    if return_parameters:
+        params = clf.precisions_
+        return predictions, params
 
     return predictions
