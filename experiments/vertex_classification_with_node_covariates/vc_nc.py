@@ -39,7 +39,7 @@ beta_params = [beta1, beta2]
 
 # M = 200
 
-# n = [75, 100, 150, 200, 300, 400, 500] #, 2000] #, 5000]
+n = [75, 100, 150, 200, 300, 400, 500] #, 2000] #, 5000]
 
 # all_errors_norm = []
 
@@ -62,11 +62,13 @@ beta_params = [beta1, beta2]
 print("begin rank 1 sbms (simulation set 2)")
 
 qs = np.arange(0.35, 0.6, step=0.05)
+print(qs)
 
 M = 200
 
 n = [75, 100, 150, 200, 300, 400, 500]
 for k, q in enumerate(tqdm(qs)):
+    print(k, q)
     B = np.array([
         [p**2, p*q],
         [p*q, q**2]
@@ -78,10 +80,12 @@ for k, q in enumerate(tqdm(qs)):
         errors_sbm = [[] for i in range(5)]
         for j in range(M):
             try:
-                temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_norm, smooth=True)
-                errors_norm = temp_norm
+                temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_sbm, smooth=True)
+                errors_sbm = temp_sbm
             except:
+                print('fail')
                 pass
+            print(j)
         
         all_errors_sbm.append(errors_sbm)
 
