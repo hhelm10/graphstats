@@ -85,7 +85,6 @@ for k, q in enumerate(tqdm(qs)):
             except:
                 print('fail')
                 pass
-            print(j)
         
         all_errors_sbm.append(errors_sbm)
 
