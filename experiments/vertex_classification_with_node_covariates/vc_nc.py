@@ -10,7 +10,7 @@ from tqdm import tqdm as tqdm
 # from graspy.simulations import sbm
 import seaborn as sns
 sns.set()
-import _pickle ;as pickle
+import _pickle as pickle
 
 np.random.seed(2)
 
