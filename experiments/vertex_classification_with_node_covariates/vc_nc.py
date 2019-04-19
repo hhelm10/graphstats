@@ -61,7 +61,7 @@ print("done true normal (simulation set 1")
 #- 2block rank1 SBM
 print("begin rank 1 sbms (simulation set 2")
 
-qs = np.arange(0.3, 0.6, step=0.05)/10
+qs = np.arange(0.35, 0.6, step=0.05)/10
 
 M = 200
 
