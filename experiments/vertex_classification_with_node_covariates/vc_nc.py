@@ -88,8 +88,8 @@ for k, q in enumerate(tqdm(qs)):
         
         all_errors_sbm.append(errors_sbm)
 
-    plot_errors(n, all_errors_sbm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'sbm_rank1_p6_q%i'%(int(10*q)))
-    pickle.dump(all_errors_sbm, open('all_errors_sbm_rank1_p6_q%i_20191904.pkl'%(int(10*q)), 'wb'))
+    plot_errors(n, all_errors_sbm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'sbm_rank1_p6_q%i'%(int(100*q)))
+    pickle.dump(all_errors_sbm, open('all_errors_sbm_rank1_p6_q%i_20191904.pkl'%(int(100*q)), 'wb'))
 
 print("done rank1 sbms (simulation set 2)")
 
