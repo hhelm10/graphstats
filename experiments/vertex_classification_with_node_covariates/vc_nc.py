@@ -10,7 +10,7 @@ from tqdm import tqdm as tqdm
 # from graspy.simulations import sbm
 import seaborn as sns
 sns.set()
-import _pickle as pickle
+import _pickle ;as pickle
 
 np.random.seed(2)
 
@@ -37,31 +37,31 @@ beta1 = [a1, a2] # beta1 = [[a1, a2, a3, .., ad], [b1, b2, .., bd]]
 beta2 = [a2, a1]
 beta_params = [beta1, beta2]
 
-M = 200
+# M = 200
 
-n = [75, 100, 150, 200, 300, 400, 500] #, 2000] #, 5000]
+# n = [75, 100, 150, 200, 300, 400, 500] #, 2000] #, 5000]
 
-all_errors_norm = []
+# all_errors_norm = []
 
-print("begin true normal (simulaion set 1")
-for i in tqdm(range(len(n))):
-    errors_norm = [[] for i in range(5)]
-    for j in range(M):
-        temp_norm = simulation(n[i], 0.5, normal_params, beta_params, cond_ind=True, errors=errors_norm, smooth=True)
-        errors_norm = temp_norm
+# print("begin true normal (simulaion set 1)")
+# for i in tqdm(range(len(n))):
+#     errors_norm = [[] for i in range(5)]
+#     for j in range(M):
+#         temp_norm = simulation(n[i], 0.5, normal_params, beta_params, cond_ind=True, errors=errors_norm, smooth=True)
+#         errors_norm = temp_norm
         
-    all_errors_norm.append(errors_norm)
+#     all_errors_norm.append(errors_norm)
 
-plot_errors(n, all_errors_norm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'true_normal')
-pickle.dump(all_errors_norm, open("true_normal_errors_20191804.pkl", 'wb'))
+# plot_errors(n, all_errors_norm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'true_normal')
+# pickle.dump(all_errors_norm, open("true_normal_errors_20191804.pkl", 'wb'))
 
-print("done true normal (simulation set 1")
+# print("done true normal (simulation set 1)")
 
 
 #- 2block rank1 SBM
-print("begin rank 1 sbms (simulation set 2")
+print("begin rank 1 sbms (simulation set 2)")
 
-qs = np.arange(0.35, 0.6, step=0.05)/10
+qs = np.arange(0.35, 0.6, step=0.05)
 
 M = 200
 
@@ -77,15 +77,18 @@ for k, q in enumerate(tqdm(qs)):
     for i in range(len(n)):
         errors_sbm = [[] for i in range(5)]
         for j in range(M):
-            temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_norm, smooth=True)
-            errors_norm = temp_norm
+            try:
+                temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_norm, smooth=True)
+                errors_norm = temp_norm
+            except:
+                pass
         
         all_errors_sbm.append(errors_sbm)
 
     plot_errors(n, all_errors_sbm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'sbm_rank1_p6_q%i'%(int(10*q)))
-    pickle.dump(all_errors_sbm, open('all_errors_sbm_rank1_p6_q%i_20191904.pkl'%(int(10*q))))
+    pickle.dump(all_errors_sbm, open('all_errors_sbm_rank1_p6_q%i_20191904.pkl'%(int(10*q)), 'wb'))
 
-print("done rank1 sbms (simulation set 2")
+print("done rank1 sbms (simulation set 2)")
 
 #- 2block rank2 SBM
 
