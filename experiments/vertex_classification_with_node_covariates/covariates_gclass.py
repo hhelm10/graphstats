@@ -346,21 +346,11 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
 
     XZ = np.concatenate((X, Z), axis=1)
 
-    #- Store mvn samples corresponding to seeds
-    seeds_norm = X[train_idx]
-
     #- Estimate normal parameters using seeds
-    mu1, cov1 = estimate_normal_parameters(X[class_train_idx[0]])
-    params1 = [mu1, cov1]
-
-    mu2, cov2 = estimate_normal_parameters(X[class_train_idx[1]])
-    params2 = [mu2, cov2]
-
-    #- Convenient way to store
-    params=[params1, params2]
-
-    #- Store uniform samples corresponding to seeds
-    seeds_beta = Z[train_idx]
+    params = []
+    for i in range(K):
+        temp_mu, temp_cov = estimate_normal_parameters(X[class_train_idx[i]])
+        params.append([temp_mu, temp_cov])
 
     #- Using conditional indendence assumption (RF, KNN used for posterior estimates)
     if errors is None:
@@ -371,10 +361,10 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
     errors[0].append(temp_error)
 
     rf1 = RF(n_estimators=100, max_depth=int(np.round(np.log(seeds_beta.shape[0]))))
-    rf1.fit(seeds_beta, labels[train_idx])
+    rf1.fit(Z[train_idx], labels[train_idx])
 
     knn1 = KNN(n_neighbors=int(np.round(np.log(seeds_beta.shape[0]))))
-    knn1.fit(seeds_beta, labels[train_idx])
+    knn1.fit(Z[train_idx], labels[train_idx])
 
     if smooth:
         temp_pred = classify(X[test_idx], Z[test_idx], params, rf1, m = m)
@@ -400,13 +390,13 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
     XZseeds = np.concatenate((seeds_norm, seeds_beta), axis=1)
 
     rf2 = RF(n_estimators=100, max_depth=int(np.round(np.log(m))))
-    rf2.fit(XZseeds, labels[train_idx])
+    rf2.fit(XZ[train_idx], labels[train_idx])
     temp_pred = rf2.predict(XZ[test_idx])
     temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
     errors[3].append(temp_error)
 
     knn2 = KNN(n_neighbors=int(np.round(np.log(m))))
-    knn2.fit(XZseeds, labels[train_idx])
+    knn2.fit(XZ[train_idx], labels[train_idx])
 
     temp_pred = knn2.predict(XZ[test_idx])
     temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
