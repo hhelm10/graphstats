@@ -3,6 +3,7 @@ from tqdm import tqdm as tqdm
 import seaborn as sns
 sns.set()
 import _pickle as pickle
+import time
 
 np.random.seed(2)
 
@@ -65,9 +66,14 @@ for k, alpha in enumerate(tqdm(alphas)):
             try:
                 temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_sbm, smooth=True)
                 errors_sbm = temp_sbm
+                failed = False
             except:
                 print('fail, %i, %1.2f'%(k, alpha))
+                failed = True
                 pass
+            if failed:
+                time.sleep(5)
+
         
         all_errors_sbm.append(errors_sbm)
 
