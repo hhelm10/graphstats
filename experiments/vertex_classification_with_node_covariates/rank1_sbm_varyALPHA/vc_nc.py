@@ -1,13 +1,5 @@
-from .covariates_gclass import *
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import graspy
-# from sklearn.ensemble import RandomForestClassifier as RF
-# from sklearn.neighbors import KNeighborsClassifier as KNN
-# from scipy.stats import multivariate_normal as mvn, beta, norm
+from covariates_gclass import *
 from tqdm import tqdm as tqdm
-# from graspy.embed import AdjacencySpectralEmbed as ASE
-# from graspy.simulations import sbm
 import seaborn as sns
 sns.set()
 import _pickle as pickle
