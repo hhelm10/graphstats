@@ -70,7 +70,7 @@ for k, alpha in enumerate(tqdm(alphas)):
             except:
                 print('fail, %i, %1.2f'%(k, alpha))
                 failed = True
-                pass
+            
             if failed:
                 time.sleep(5)
 
