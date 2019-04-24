@@ -29,15 +29,15 @@ B = np.array([
         [0.4, 0.2]
 ])
 
-cs = np.arange(0.2, 0.8, step=0.1)
+cs = np.arange(0.2, 0.75, step=0.1)
 print(cs)
 
 n = [75, 100, 150, 200, 300, 400, 500]
-for c, alpha in enumerate(tqdm(cs)):
-    temp_B = B + np.diag(c*np.ones(2))
+for k, c in enumerate(tqdm(cs)):
+    temp_B = B + np.diag([0, c])
     all_errors_sbm = []
 
-    for i in range(len(n)):
+    for i in tqdm(range(len(n))):
         errors_sbm = [[] for i in range(5)]
         for j in range(M):
             try:
@@ -45,15 +45,13 @@ for c, alpha in enumerate(tqdm(cs)):
                 errors_sbm = temp_sbm
                 failed = False
             except:
-                print('fail, %i, %1.2f'%(k, alpha))
+                print('fail, %i, %1.1f'%(k, c))
                 failed = True
-            
-            if failed:
                 time.sleep(5)
 
         all_errors_sbm.append(errors_sbm)
 
     plot_errors(n, all_errors_sbm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'DCSBM_20192404%i'%(int(10*c)))
-    pickle.dump(all_errors_sbm, open('all_errors_sbm_DCSBM_20192404.pkl'%(int(10*c)), 'wb'))
+    pickle.dump(all_errors_sbm, open('all_errors_sbm_DCSBM%i_20192404.pkl'%(int(10*c)), 'wb'))
 
 print("done simulation set 1")
