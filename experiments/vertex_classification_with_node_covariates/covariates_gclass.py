@@ -360,10 +360,10 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
     temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
     errors[0].append(temp_error)
 
-    rf1 = RF(n_estimators=100, max_depth=int(np.round(np.log(seeds_beta.shape[0]))))
+    rf1 = RF(n_estimators=100, max_depth=int(np.round(np.log(Z[train_idx].shape[0]))))
     rf1.fit(Z[train_idx], labels[train_idx])
 
-    knn1 = KNN(n_neighbors=int(np.round(np.log(seeds_beta.shape[0]))))
+    knn1 = KNN(n_neighbors=int(np.round(np.log(Z[train_idx].shape[0]))))
     knn1.fit(Z[train_idx], labels[train_idx])
 
     if smooth:
@@ -380,14 +380,14 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
         errors[1].append(temp_error)
 
         knn1 = KNN(n_neighbors=int(np.round(np.log(m))))
-        knn1.fit(seeds_beta, labels[train_idx])
+        knn1.fit(Z[train_idx], labels[train_idx])
 
         temp_pred = classify(X[test_idx], Z[test_idx], params, knn1)
         temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
         errors[2].append(temp_error)
 
     #- Not using conditional independence assumption (RF, KNN used for classification)
-    XZseeds = np.concatenate((seeds_norm, seeds_beta), axis=1)
+    XZseeds = np.concatenate((X[train_idx], Z[train_idx]), axis=1)
 
     rf2 = RF(n_estimators=100, max_depth=int(np.round(np.log(m))))
     rf2.fit(XZ[train_idx], labels[train_idx])
