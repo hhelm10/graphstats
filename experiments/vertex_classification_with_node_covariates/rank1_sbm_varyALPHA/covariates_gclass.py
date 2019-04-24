@@ -1,6 +1,8 @@
 #- standard imports
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
 
 #- statistical inference on graphs
 from graspy.embed import AdjacencySpectralEmbed as ASE
@@ -420,6 +422,8 @@ def plot_errors(sample_sizes, errors, labels, xlabel=None, ylabel=None, title=No
             stds[j][i] = np.std(errors[i][j], ddof=1)/np.sqrt(len(errors[i][j]))
 
     fig, ax = plt.subplots(1,1)
+    
+    sns.set_context('talk', font_scale=3)
     colors = ['r', 'b', 'g', 'c', 'm']
     for i in range(n_classifiers):
         ax.plot(sample_sizes, means[i], label=labels[i], c = colors[i])
@@ -440,7 +444,7 @@ def plot_errors(sample_sizes, errors, labels, xlabel=None, ylabel=None, title=No
 
     if ylabel is None:
         ylabel = 'misclassification rate'
-    ax.set_xlabel(ylabel)
+    ax.set_ylabel(ylabel)
 
     if title is None:
         title = 'misclassification rate vs n'

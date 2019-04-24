@@ -2,8 +2,6 @@ typing
 numpy
 scipy
 networkx
-python-igraph
-rpy2
 sklearn
 jinja2
 scipy

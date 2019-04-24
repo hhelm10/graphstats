@@ -53,7 +53,7 @@ def profile_likelihood(L, n_elbows = 1, max_dim = 100, threshold = 0):
         sample_var = np.var(U, ddof = 1)
         sample_scale = sample_var**(1/2)
         elbow = 0 # Initialize the elbow
-        likelihood_elbow = 0 # Initialize the likelihood given
+        likelihood_elbow = -100000 # Initialize the likelihood given
        
         while d < len(U):
             mean_sig = np.mean(U[:d]) # Mean of the values considered signal
@@ -61,9 +61,9 @@ def profile_likelihood(L, n_elbows = 1, max_dim = 100, threshold = 0):
             sig_likelihood = 0 # Initailize signal likelihood
             noise_likelihood = 0 # Initalize noise likelihood
             for i in range(d):
-                sig_likelihood += norm.pdf(U[i], mean_sig, sample_scale) # Update signal likelihood
+                sig_likelihood += np.log(norm.pdf(U[i], mean_sig, sample_scale)) # Update signal likelihood
             for i in range(d, len(U)):
-                noise_likelihood += norm.pdf(U[i], mean_noise, sample_scale) # Update noise likelihood
+                noise_likelihood += np.log(norm.pdf(U[i], mean_noise, sample_scale)) # Update noise likelihood
             
             likelihood = noise_likelihood + sig_likelihood # likelihood for the current crtical valule
         

@@ -53,11 +53,21 @@ def gen_F(K, equal = False, dist = "poisson", min_ = 1, max_ = 100, acorn = 1234
             
     return F
 
-def adj_matrix(n, pi, Lambda, weighted = False, dist = "", means = [], scales = 0, acorn = 1234):
+def adj_matrix(n, pi, Lambda, weighted = False, dist = "", means = [], scales = 0, acorn = None):
+    if acorn is None:
+        acorn=np.random.randint(10**6)
     np.random.seed(acorn)
     n = int(n) # Just in case!
     A = np.zeros(shape = (n, n)) # n x n adjcacency matrix
     K = len(pi) # extract the number of blocks in the SBM
+
+    for i in range(K):
+        for j in range(i, K):
+            if Lambda[i, j] < 0:
+                Lambda[i,j] = 0
+            elif Lambda[i, j] > 1:
+                Lambda[i, j] = 1
+            
     
     i = 0 # start at block indexed with 0
     while i < K: # while the block number is less than the total number of blocks
