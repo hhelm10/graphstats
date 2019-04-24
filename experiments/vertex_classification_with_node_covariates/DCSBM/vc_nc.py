@@ -25,7 +25,7 @@ print("begin simulation set 1")
 
 M = 200
 B = np.array([
-        [0.7, 0.4]
+        [0.7, 0.4],
         [0.4, 0.2]
 ])
 
