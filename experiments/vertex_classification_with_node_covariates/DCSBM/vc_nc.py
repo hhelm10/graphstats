@@ -4,7 +4,7 @@ import seaborn as sns
 sns.set()
 import _pickle as pickle
 import time
-sns.set_context("talk")
+sns.set_context("paper")
 
 np.random.seed(2)
 
