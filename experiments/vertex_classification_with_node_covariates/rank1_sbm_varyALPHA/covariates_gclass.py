@@ -423,7 +423,6 @@ def plot_errors(sample_sizes, errors, labels, xlabel=None, ylabel=None, title=No
 
     fig, ax = plt.subplots(1,1)
     
-    sns.set_context('talk', font_scale=3)
     colors = ['r', 'b', 'g', 'c', 'm']
     for i in range(n_classifiers):
         ax.plot(sample_sizes, means[i], label=labels[i], c = colors[i])
