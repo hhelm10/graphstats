@@ -440,7 +440,7 @@ def plot_errors(sample_sizes, errors, labels, xlabel=None, ylabel=None, title=No
 
     if ylabel is None:
         ylabel = 'misclassification rate'
-    ax.set_xlabel(ylabel)
+    ax.set_ylabel(ylabel)
 
     if title is None:
         title = 'misclassification rate vs n'

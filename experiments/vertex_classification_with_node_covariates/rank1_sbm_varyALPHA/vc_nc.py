@@ -74,10 +74,15 @@ for k, alpha in enumerate(tqdm(alphas)):
             if failed:
                 time.sleep(5)
 
-        
         all_errors_sbm.append(errors_sbm)
 
-    plot_errors(n, all_errors_sbm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'sbm_rank1_p6_alpha%i'%(int(10*alpha)))
+    plot_errors(n, 
+    	all_errors_sbm, 
+    	labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], 
+    	xlabel = 'n',
+    	ylabel = 'misclassification rate',
+    	title = 'misclassification rate vs n',
+    	png_title = 'sbm_rank1_p6_alpha%i'%(int(10*alpha)))
     pickle.dump(all_errors_sbm, open('all_errors_sbm_rank1_p6_alpha%i_20191904.pkl'%(int(10*alpha)), 'wb'))
 
 print("done rank1 sbms (simulation set 1)")
