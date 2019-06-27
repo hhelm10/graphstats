@@ -40,7 +40,7 @@ print("begin rank 1 sbms (simulation set 1)")
 alphas = np.concatenate((np.arange(4, 6.5, step=0.5), [7]))
 print(alphas)
 
-M = 200
+M = 2
 B = np.array([
         [p**2, p*q],
         [p*q, q**2]
@@ -61,7 +61,7 @@ for k, alpha in enumerate(tqdm(alphas)):
     all_errors_sbm = []
 
     for i in range(len(n)):
-        errors_sbm = [[] for i in range(5)]
+        errors_sbm = [[] for i in range(6)]
         for j in range(M):
             try:
                 temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_sbm, smooth=True)
@@ -79,7 +79,7 @@ for k, alpha in enumerate(tqdm(alphas)):
 
     plot_errors(n, 
     	all_errors_sbm, 
-    	labels = ['SDA-RF', 'SDA-kNN', 'RF', 'kNN', 'GCN'], 
+    	labels = ['SDA-RF', 'SDA-kNN', 'QDA', 'RF', 'kNN', 'GCN'], 
     	xlabel = 'n',
     	ylabel = 'Misclassification Rate',
     	title = 'Misclassification Rate vs n',

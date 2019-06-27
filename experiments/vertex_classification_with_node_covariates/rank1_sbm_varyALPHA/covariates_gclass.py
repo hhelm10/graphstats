@@ -29,6 +29,7 @@ import torch.optim as optim
 from pygcn.utils import accuracy
 from pygcn.models import GCN as GraphConvolutionalNeuralNetwork
 
+import seaborn as sns
 
 def MVN_sampler(counts, params, seed=None):
     """
@@ -302,16 +303,25 @@ def GCN(adj, features, train_idx, labels, epochs=200, n_hidden=16, dropout=0.5, 
 
     if isinstance(adj, np.ndarray):
         adj = np_to_sparse_tensor(adj)
-    
-    model = GraphConvolutionalNeuralNetwork(nfeat=features.shape[1],
-            nhid=n_hidden,
-            nclass=labels.max().item() + 1,
-            dropout=dropout)
-    optimizer = optim.Adam(model.parameters(),
-                       lr=lr, weight_decay=weight_decay)
+   
+    if isinstance(features, np.ndarray):
+        features = torch.FloatTensor(features)
 
-    def train(epoch):
-        t = time.time()
+    if isinstance(train_idx, np.ndarray):
+        train_idx = torch.LongTensor(train_idx)
+
+    if isinstance(labels, np.ndarray):
+        labels = torch.LongTensor(labels)
+
+    model = GraphConvolutionalNeuralNetwork(nfeat=features.shape[1],
+            nhid=int(n_hidden),
+            nclass=int(labels.max().item() + 1),
+            dropout=dropout)
+
+    optimizer = optim.Adam(model.parameters(),
+                       lr=learning_rate, weight_decay=weight_decay)
+
+    def _train():
         model.train()
         optimizer.zero_grad()
         output = model(features, adj)
@@ -321,8 +331,8 @@ def GCN(adj, features, train_idx, labels, epochs=200, n_hidden=16, dropout=0.5, 
         optimizer.step()
 
     test_idx = np.array([i for i in range(adj.shape[0]) if i not in train_idx])
-
-    def test():
+    test_idx = torch.LongTensor(test_idx)
+    def _test():
         model.eval()
         output = model(features, adj)
         # loss_test = F.nll_loss(output[test_idx], labels[test_idx])
@@ -331,9 +341,9 @@ def GCN(adj, features, train_idx, labels, epochs=200, n_hidden=16, dropout=0.5, 
         return acc_test
 
     for epoch in range(epochs):
-        train(epoch)
+        _train()
 
-    return test()
+    return _test()
 
 def np_to_sparse_tensor(np_array):
     """ Convert a numpy array to a torch sparse tensor inefficiently."""
@@ -343,7 +353,8 @@ def np_to_sparse_tensor(np_array):
         np.vstack((sp_coo_mx.row, sp_coo_mx.col)).astype(np.int64))
     values = torch.from_numpy(sp_coo_mx.data)
     shape = torch.Size(sp_coo_mx.shape)
-    return torch.sparse.FloatTensor(indices, values, shape)
+    torch_sparse = torch.sparse.FloatTensor(indices, values, shape)
+    return torch_sparse
 
 
 def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, smooth=False, acorn=None):
@@ -500,14 +511,16 @@ def plot_errors(sample_sizes, errors, labels, xlabel=None, ylabel=None, title=No
             stds[j][i] = np.std(errors[i][j], ddof=1)/np.sqrt(len(errors[i][j]))
 
     fig, ax = plt.subplots(1,1)
-    sns.set(palette=sns.color_palette("Set1", n_colors = len(labels)))
+    sns.set()
+    sns.set_palette("Set1", len(labels))
+    colors = sns.color_palette("Set1", 6)
     for i in range(n_classifiers):
-        ax.plot(sample_sizes, means[i], label=labels[i])
-        ax.fill_between(sample_sizes, 
+        ax.plot(sample_sizes, means[i], label=labels[i], c=colors[i])
+        ax.fill_between(sample_sizes,
             means[i] + 1.96*stds[i], 
             means[i] - 1.96*stds[i], 
-            where=means[i] + 1.96*stds[i] >= means[i] - 1.96*stds[i], 
-            facecolor=colors[i], 
+            where=means[i] + 1.96*stds[i] >= means[i] - 1.96*stds[i],
+            facecolor=colors[i],
             alpha=0.15,
             interpolate=True)
 
