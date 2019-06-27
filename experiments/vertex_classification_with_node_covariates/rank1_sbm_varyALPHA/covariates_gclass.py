@@ -443,11 +443,11 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
 
         temp_pred = classify(X[test_idx], Z[test_idx], params, knn1)
         temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
-        errors[`].append(temp_error)
+        errors[1].append(temp_error)
 
     temp_pred = QDA(X[test_idx], pi_hats, params)
     temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
-    errors[1].append(temp_error)
+    errors[2].append(temp_error)
 
     #- Not using conditional independence assumption (RF, KNN used for classification)
     XZseeds = np.concatenate((X[train_idx], Z[train_idx]), axis=1)
