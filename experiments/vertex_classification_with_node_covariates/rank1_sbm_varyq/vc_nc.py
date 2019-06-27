@@ -11,6 +11,7 @@ from tqdm import tqdm as tqdm
 import seaborn as sns
 sns.set()
 import _pickle as pickle
+import time
 
 np.random.seed(2)
 
@@ -59,14 +60,19 @@ for k, q in enumerate(tqdm(qs)):
     all_errors_sbm = []
 
     for i in range(len(n)):
-        errors_sbm = [[] for i in range(5)]
+        errors_sbm = [[] for i in range(6)]
         for j in range(M):
             try:
                 temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_sbm, smooth=True)
                 errors_sbm = temp_sbm
+                failed = False
             except:
                 print('fail')
+                failed = True
                 pass
+
+            if failed:
+                time.sleep(5)
         
         all_errors_sbm.append(errors_sbm)
 
@@ -76,7 +82,7 @@ for k, q in enumerate(tqdm(qs)):
         xlabel = 'n',
         ylabel = 'Misclassification Rate',
         title = 'Misclassification Rate vs n',
-
+    )
     pickle.dump(all_errors_sbm, open('all_errors_sbm_rank1_p6_q%i_20191904.pkl'%(int(100*q)), 'wb'))
 
 print("done rank1 sbms (simulation set 2)")
