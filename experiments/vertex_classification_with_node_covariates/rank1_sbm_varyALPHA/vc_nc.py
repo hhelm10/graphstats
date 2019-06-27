@@ -78,10 +78,10 @@ for k, alpha in enumerate(tqdm(alphas)):
 
     plot_errors(n, 
     	all_errors_sbm, 
-    	labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], 
+    	labels = ['SDA-RF', 'SDA-kNN', 'RF', 'kNN', 'GCN'], 
     	xlabel = 'n',
-    	ylabel = 'misclassification rate',
-    	title = 'misclassification rate vs n',
+    	ylabel = 'Misclassification Rate',
+    	title = 'Misclassification Rate vs n',
     	png_title = 'sbm_rank1_p6_alpha%i'%(int(10*alpha)))
     pickle.dump(all_errors_sbm, open('all_errors_sbm_rank1_p6_alpha%i_20191904.pkl'%(int(10*alpha)), 'wb'))
 

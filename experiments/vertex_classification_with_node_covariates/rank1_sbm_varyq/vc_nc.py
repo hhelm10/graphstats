@@ -41,24 +41,6 @@ beta_params = [beta1, beta2]
 
 n = [75, 100, 150, 200, 300, 400, 500] #, 2000] #, 5000]
 
-# all_errors_norm = []
-
-# print("begin true normal (simulaion set 1)")
-# for i in tqdm(range(len(n))):
-#     errors_norm = [[] for i in range(5)]
-#     for j in range(M):
-#         temp_norm = simulation(n[i], 0.5, normal_params, beta_params, cond_ind=True, errors=errors_norm, smooth=True)
-#         errors_norm = temp_norm
-        
-#     all_errors_norm.append(errors_norm)
-
-# plot_errors(n, all_errors_norm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'true_normal')
-# pickle.dump(all_errors_norm, open("true_normal_errors_20191804.pkl", 'wb'))
-
-# print("done true normal (simulation set 1)")
-
-
-#- 2block rank1 SBM
 print("begin rank 1 sbms (simulation set 2)")
 
 qs = np.arange(0.35, 0.6, step=0.05)
@@ -88,47 +70,13 @@ for k, q in enumerate(tqdm(qs)):
         
         all_errors_sbm.append(errors_sbm)
 
-    plot_errors(n, all_errors_sbm, labels = ['qda', 'hhrf', 'hhknn', 'rf', 'knn'], png_title = 'sbm_rank1_p6_q%i'%(int(100*q)))
+    plot_errors(n, 
+        all_errors_sbm, 
+        labels = ['SDA-RF', 'SDA-kNN', 'RF', 'kNN', 'GCN'], 
+        xlabel = 'n',
+        ylabel = 'Misclassification Rate',
+        title = 'Misclassification Rate vs n',
+
     pickle.dump(all_errors_sbm, open('all_errors_sbm_rank1_p6_q%i_20191904.pkl'%(int(100*q)), 'wb'))
 
 print("done rank1 sbms (simulation set 2)")
-
-#- 2block rank2 SBM
-
-
-#- 2block rank2 SBM
-
-# p = 0.6
-# qs = np.arange(3, 6, step=0.05)/10
-
-# std1, std2 = np.sqrt(rank1_variance(pi0, p, 0.55))
-
-# w = 1
-# mean = 0.025*np.ones(w)
-# cov = np.eye(w)
-
-# normal1 = [mean, std1*cov]
-# normal2 = [-mean, std2*cov]
-# normal_params = [normal1, normal2]
-
-# np.random.seed(2)
-
-# M = 100
-
-# n = [75, 100, 150, 200, 300, 400, 500] #, 2000] #, 5000]
-
-# all_errors_norm = []
-# all_errors_sbm = []
-
-# for i in tqdm(range(len(n))):
-#     errors_norm = [[] for i in range(5)]
-#     errors_sbm = [[] for i in range(5)]
-#     for j in range(M):
-#         temp_norm = simulation(n[i], 0.5, normal_params, beta_params, cond_ind=True, errors=errors_norm, smooth=True)
-#         errors_norm = temp_norm
-        
-#         temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_sbm, smooth=True)
-#         errors_sbm = temp_sbm
-        
-#     all_errors_norm.append(errors_norm)
-#     all_errors_sbm.append(errors_sbm)
