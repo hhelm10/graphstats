@@ -1,8 +1,12 @@
+from __future__ import division
+from __future__ import print_function
+
 #- standard imports
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set()
+import time
+import argparse
+import scipy.sparse as sp
 
 #- statistical inference on graphs
 from graspy.embed import AdjacencySpectralEmbed as ASE
@@ -15,6 +19,16 @@ from sklearn.neighbors import KNeighborsClassifier as KNN
 #- pdf evaluations
 from scipy.stats import multivariate_normal as mvn
 from scipy.stats import beta, norm
+
+#- module, functions for gcns
+import torch
+import torch.nn.functional as F
+import torch.optim as optim
+
+#- gcn implementation
+from pygcn.utils import accuracy
+from pygcn.models import GCN as GraphConvolutionalNeuralNetwork
+
 
 def MVN_sampler(counts, params, seed=None):
     """
@@ -54,6 +68,7 @@ def MVN_sampler(counts, params, seed=None):
         
     return samples
 
+
 def beta_sampler(counts, params, seed=None):
     if seed is None:
         seed = np.random.randint(10**6)
@@ -70,6 +85,7 @@ def beta_sampler(counts, params, seed=None):
                                                                                   params[k][1][i], 
                                                                                   counts[k])
     return samples
+
 
 def conditional_MVN_sampler(Z, rho, counts, params, seed=None):
     # could be written in MVN_sampler
@@ -94,6 +110,7 @@ def conditional_MVN_sampler(Z, rho, counts, params, seed=None):
     
     return X
 
+
 def estimate_normal_parameters(samples):
     """
     Simple function to estiamte normal parameters.
@@ -106,6 +123,7 @@ def estimate_normal_parameters(samples):
         return np.mean(samples, axis = 0), np.cov(samples, rowvar=False)
     else:
         raise ValueError('tensors not supported')
+
 
 def classify(X, Z, normal_params, fitted_model, m = None):
     """
@@ -147,6 +165,7 @@ def classify(X, Z, normal_params, fitted_model, m = None):
         
     return predictions
 
+
 def error_rate(truth, predictions, seed_idx = None, metric = 'accuracy'):
     """
     If metric is 'accuracy', calculates 0-1 loss.
@@ -155,6 +174,7 @@ def error_rate(truth, predictions, seed_idx = None, metric = 'accuracy'):
         if seed_idx is None:
             return 1 - np.sum(predictions == truth)/len(truth)
         
+
 def estimate_bayes(n, pi, normal_params, beta_params, seed=None):
     if seed is None:
         seed = np.random.randint(10**6)
@@ -185,6 +205,7 @@ def estimate_bayes(n, pi, normal_params, beta_params, seed=None):
         predictions[i] = np.argmax(normal_pdfs * beta_pdfs)
         
     return error_rate(labels, predictions)
+
 
 def blowup(P, tau):
     """
@@ -220,6 +241,7 @@ def blowup(P, tau):
             
     return blown_up
 
+
 def QDA(X, pi, params):
     """ 
     An implementation of quadratic discriminant analysis.
@@ -246,6 +268,7 @@ def QDA(X, pi, params):
         
     return predictions
 
+
 def rank1_variance(pi, p, q):
     """
     A function that finds the theoretical variance for the 2 block, rank 1
@@ -271,6 +294,44 @@ def rank1_variance(pi, p, q):
     
     den = (pi0* p**2 + pi1 * q**2)**2
     return [num1/den, num2/den]
+
+
+def GCN(adj, features, train_idx, labels, epochs=200, n_hidden=16, dropout=0.5, learning_rate=0.01, weight_decay=5e-4, acorn=None):
+    if acorn is not None:
+        np.random.seed(acorn)
+
+    model = GraphConvolutionalNeuralNetwork(nfeat=features.shape[1],
+            n_hidden=hidden,
+            nclass=labels.max().item() + 1,
+            dropout=dropout)
+    optimizer = optim.Adam(model.parameters(),
+                       lr=lr, weight_decay=weight_decay)
+
+    def train(epoch):
+        t = time.time()
+        model.train()
+        optimizer.zero_grad()
+        output = model(features, adj)
+        loss_train = F.nll_loss(output[train_idx], labels[train_idx])
+        acc_train = accuracy(output[train_idx], labels[train_idx])
+        loss_train.backward()
+        optimizer.step()
+
+    test_idx = np.array([i for i in range(adj.shape[0]) if i not in train_idx])
+
+    def test():
+        model.eval()
+        output = model(features, adj)
+        # loss_test = F.nll_loss(output[test_idx], labels[test_idx])
+        acc_test = accuracy(output[test_idx], labels[test_idx])
+
+        return acc_test
+
+    for epoch in range(epochs):
+        train(epoch)
+
+    return test()
+
 
 def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, smooth=False, acorn=None):
     #- Type checks
@@ -336,8 +397,8 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
     else:
         if sbm_check:
             P = blowup(normal_params, counts) # A big version of B to be able to change connectivity probabilities of individual nodes
-            scales = np.sqrt(Z @ Z.T) # would do just the outer product, but if the Z's are too small we risk not being connected 
-            new_P = P*scales # new probability matrix
+            scales = np.prod(Z, axis=1)**(1/Z.shape[1]) # would do just the outer product, but if the Z's are too small we risk not being connected 
+            new_P = P*(scales @ scale.T) # new probability matrix
             A = sbm(np.ones(n).astype(int), new_P) 
             ase_obj = ASE(n_elbows=1)
             X = ase_obj.fit_transform(A)
@@ -358,10 +419,6 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
     if errors is None:
         errors = [[] for i in range(5)]
 
-    temp_pred = QDA(X[test_idx], pi_hats, params)
-    temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
-    errors[0].append(temp_error)
-
     rf1 = RF(n_estimators=100, max_depth=int(np.round(np.log(Z[train_idx].shape[0]))))
     rf1.fit(Z[train_idx], labels[train_idx])
 
@@ -371,22 +428,26 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
     if smooth:
         temp_pred = classify(X[test_idx], Z[test_idx], params, rf1, m = m)
         temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
-        errors[1].append(temp_error)
+        errors[0].append(temp_error)
 
         temp_pred = classify(X[test_idx], Z[test_idx], params, knn1, m = m)
         temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
-        errors[2].append(temp_error)
+        errors[1].append(temp_error)
     else:
         temp_pred = classify(X[test_idx], Z[test_idx], params, rf1)
         temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
-        errors[1].append(temp_error)
+        errors[0].append(temp_error)
 
         knn1 = KNN(n_neighbors=int(np.round(np.log(m))))
         knn1.fit(Z[train_idx], labels[train_idx])
 
         temp_pred = classify(X[test_idx], Z[test_idx], params, knn1)
         temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
-        errors[2].append(temp_error)
+        errors[`].append(temp_error)
+
+    temp_pred = QDA(X[test_idx], pi_hats, params)
+    temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
+    errors[1].append(temp_error)
 
     #- Not using conditional independence assumption (RF, KNN used for classification)
     XZseeds = np.concatenate((X[train_idx], Z[train_idx]), axis=1)
@@ -403,6 +464,10 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
     temp_pred = knn2.predict(XZ[test_idx])
     temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
     errors[4].append(temp_error)
+
+    temp_accuracy = GCN(adj, features, train_idx, labels)
+    temp_error = 1 - temp_accuracy
+    errors[5].append(temp_error)
 
     return errors
 
@@ -422,10 +487,9 @@ def plot_errors(sample_sizes, errors, labels, xlabel=None, ylabel=None, title=No
             stds[j][i] = np.std(errors[i][j], ddof=1)/np.sqrt(len(errors[i][j]))
 
     fig, ax = plt.subplots(1,1)
-    
-    colors = ['r', 'b', 'g', 'c', 'm']
+    sns.set(palette=sns.color_palette("Set1", n_colors = len(labels)))
     for i in range(n_classifiers):
-        ax.plot(sample_sizes, means[i], label=labels[i], c = colors[i])
+        ax.plot(sample_sizes, means[i], label=labels[i])
         ax.fill_between(sample_sizes, 
             means[i] + 1.96*stds[i], 
             means[i] - 1.96*stds[i], 
