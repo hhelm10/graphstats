@@ -67,7 +67,8 @@ for k, alpha in enumerate(tqdm(alphas)):
                 temp_sbm = simulation(n[i], 0.5, B, beta_params, cond_ind=True, errors=errors_sbm, smooth=True)
                 errors_sbm = temp_sbm
                 failed = False
-            except:
+            except Exception as e:
+                print(str(e))
                 print('fail, %i, %1.2f'%(k, alpha))
                 failed = True
             
