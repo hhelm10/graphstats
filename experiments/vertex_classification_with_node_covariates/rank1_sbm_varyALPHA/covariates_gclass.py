@@ -300,8 +300,11 @@ def GCN(adj, features, train_idx, labels, epochs=200, n_hidden=16, dropout=0.5, 
     if acorn is not None:
         np.random.seed(acorn)
 
+    if isinstance(adj, np.ndarray):
+        adj = np_to_sparse_tensor(adj)
+    
     model = GraphConvolutionalNeuralNetwork(nfeat=features.shape[1],
-            n_hidden=hidden,
+            nhid=n_hidden,
             nclass=labels.max().item() + 1,
             dropout=dropout)
     optimizer = optim.Adam(model.parameters(),
@@ -331,6 +334,16 @@ def GCN(adj, features, train_idx, labels, epochs=200, n_hidden=16, dropout=0.5, 
         train(epoch)
 
     return test()
+
+def np_to_sparse_tensor(np_array):
+    """ Convert a numpy array to a torch sparse tensor inefficiently."""
+    
+    sp_coo_mx = sp.coo_matrix(np_array).astype(np.float32)
+    indices = torch.from_numpy(
+        np.vstack((sp_coo_mx.row, sp_coo_mx.col)).astype(np.int64))
+    values = torch.from_numpy(sp_coo_mx.data)
+    shape = torch.Size(sp_coo_mx.shape)
+    return torch.sparse.FloatTensor(indices, values, shape)
 
 
 def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, smooth=False, acorn=None):
@@ -465,7 +478,7 @@ def simulation(n, pi, normal_params, beta_params, cond_ind=True, errors = None, 
     temp_error = 1 - np.sum(temp_pred == labels[test_idx])/len(test_idx)
     errors[4].append(temp_error)
 
-    temp_accuracy = GCN(adj, features, train_idx, labels)
+    temp_accuracy = GCN(A, Z, train_idx, labels)
     temp_error = 1 - temp_accuracy
     errors[5].append(temp_error)
 
