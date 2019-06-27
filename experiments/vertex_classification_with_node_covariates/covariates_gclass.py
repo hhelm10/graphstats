@@ -342,7 +342,7 @@ def np_to_sparse_tensor(np_array):
     indices = torch.from_numpy(
         np.vstack((sp_coo_mx.row, sp_coo_mx.col)).astype(np.int64))
     values = torch.from_numpy(sp_coo_mx.data)
-    shape = torch.Size(sp_coo_mx.shape)
+    shape = torch.Size(sp_coo_mx.shape).astype(int)
     return torch.sparse.FloatTensor(indices, values, shape)
 
 
