@@ -40,7 +40,7 @@ print("begin rank 1 sbms (simulation set 1)")
 alphas = np.concatenate((np.arange(4, 6.5, step=0.5), [7]))
 print(alphas)
 
-M = 2
+M = 200
 B = np.array([
         [p**2, p*q],
         [p*q, q**2]
